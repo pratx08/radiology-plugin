@@ -62,6 +62,11 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
   }
 
   const isReadOnly = localStatus === "Final"
+  const imageBase = import.meta.env.BASE_URL
+  const studyPreviewImages =
+    order.modality === "CT"
+      ? [`${imageBase}ct-2.jpg`, `${imageBase}ct-3.jpg`]
+      : []
 
   const filteredConclusions = conclusionOptions.filter((c) =>
     c.label.toLowerCase().includes(conclusionSearch.toLowerCase())
@@ -124,7 +129,6 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/worklist")}>
@@ -132,31 +136,58 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
           </Button>
           <div>
             <h2 className="text-xl font-bold">
-              {order.patientName} — {order.modalityLabel} {order.bodySite}
+              {order.patientName} - {order.modalityLabel} {order.bodySite}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {order.accessionNumber} | {order.patientId} | {order.age}{order.sex}
+              {order.accessionNumber} | {order.patientId} | {order.age}
+              {order.sex}
             </p>
           </div>
         </div>
-        <Badge variant={statusBadgeVariant[localStatus]} className="text-sm px-3 py-1">
+        <Badge variant={statusBadgeVariant[localStatus]} className="px-3 py-1 text-sm">
           {localStatus}
         </Badge>
       </div>
 
-      {/* Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* LEFT — Viewer Placeholder (3/5) */}
-        <div className="lg:col-span-3 space-y-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <div className="space-y-4 lg:col-span-3">
           <Card className="bg-gray-900 text-gray-300">
-            <CardContent className="flex flex-col items-center justify-center py-24">
-              <MonitorPlay className="h-16 w-16 mb-4 text-gray-500" />
-              <p className="text-lg font-medium text-gray-400">
-                DICOM Viewer — OHIF Integration
-              </p>
-              <p className="text-xs text-gray-600 mt-2">
-                Images loaded from Orthanc via DICOMweb (WADO-RS)
-              </p>
+            <CardContent className="space-y-4 p-4">
+              {studyPreviewImages.length > 0 ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-medium text-white">CT Study Preview</p>
+                      <p className="text-xs text-gray-400">
+                        Representative slices for local review
+                      </p>
+                    </div>
+                    <MonitorPlay className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {studyPreviewImages.map((src, index) => (
+                      <div
+                        key={src}
+                        className="overflow-hidden rounded-lg border border-gray-800 bg-black"
+                      >
+                        <img
+                          src={src}
+                          alt={`CT preview ${index + 1}`}
+                          className="h-72 w-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-24">
+                  <MonitorPlay className="mb-4 h-16 w-16 text-gray-500" />
+                  <p className="text-lg font-medium text-gray-400">DICOM Viewer Preview</p>
+                  <p className="mt-2 text-xs text-gray-600">
+                    CT preview images are available for CT studies only
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -164,22 +195,22 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
             <CardContent className="py-3 text-sm">
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <p className="text-muted-foreground text-xs">Study</p>
+                  <p className="text-xs text-muted-foreground">Study</p>
                   <p className="font-medium">
                     {order.modalityLabel} {order.bodySite}
                     {order.contrastRequired ? " with Contrast" : " without Contrast"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Series</p>
-                  <p className="font-medium">{order.seriesCount ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">Series</p>
+                  <p className="font-medium">{order.seriesCount ?? "-"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Instances</p>
-                  <p className="font-medium">{order.instanceCount ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">Instances</p>
+                  <p className="font-medium">{order.instanceCount ?? "-"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Study Date</p>
+                  <p className="text-xs text-muted-foreground">Study Date</p>
                   <p className="font-medium">{order.orderDate}</p>
                 </div>
               </div>
@@ -187,14 +218,12 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
           </Card>
         </div>
 
-        {/* RIGHT — Report Form (2/5) */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Radiology Report</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Findings */}
               <div className="space-y-2">
                 <Label>Findings</Label>
                 <Textarea
@@ -206,7 +235,6 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
                 />
               </div>
 
-              {/* Conclusion with SNOMED autocomplete */}
               <div className="space-y-2">
                 <Label>Conclusion (ICD / SNOMED)</Label>
                 <div className="relative">
@@ -222,7 +250,7 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
                     disabled={isReadOnly}
                   />
                   {showConclusionDropdown && conclusionSearch && !isReadOnly && (
-                    <div className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow-md max-h-48 overflow-auto">
+                    <div className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border bg-white shadow-md">
                       {filteredConclusions.map((c) => (
                         <button
                           key={c.code}
@@ -242,7 +270,6 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
                 </div>
               </div>
 
-              {/* Impression */}
               <div className="space-y-2">
                 <Label>Impression</Label>
                 <Textarea
@@ -254,16 +281,14 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
                 />
               </div>
 
-              {/* Upload PDF */}
               <div className="space-y-2">
                 <Label>Upload PDF Report</Label>
                 <div className="rounded-md border-2 border-dashed border-gray-300 p-4 text-center text-sm text-muted-foreground">
-                  <Upload className="mx-auto h-6 w-6 mb-1" />
+                  <Upload className="mx-auto mb-1 h-6 w-6" />
                   Drag & drop or click to upload PDF
                 </div>
               </div>
 
-              {/* Critical Results */}
               <div className="flex items-center justify-between">
                 <Label className="text-sm">Critical Result</Label>
                 <Switch
@@ -273,17 +298,17 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
                 />
               </div>
               {criticalResult && (
-                <div className="rounded-md bg-red-50 border border-red-200 p-3 flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600" />
                   <p className="text-sm text-red-800">
-                    This report contains critical findings requiring immediate clinical attention.
+                    This report contains critical findings requiring immediate clinical
+                    attention.
                   </p>
                 </div>
               )}
 
               <Separator />
 
-              {/* Action Bar */}
               <div className="flex flex-wrap gap-2">
                 {!isReadOnly && (
                   <>
@@ -309,7 +334,6 @@ export function ReportAuthoring({ orders, onUpdateOrder }: ReportAuthoringProps)
         </div>
       </div>
 
-      {/* Finalize Dialog */}
       <Dialog open={showFinalizeDialog} onOpenChange={setShowFinalizeDialog}>
         <DialogContent>
           <DialogHeader>

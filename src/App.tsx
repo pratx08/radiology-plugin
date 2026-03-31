@@ -1,13 +1,11 @@
 import { useState, useCallback } from "react"
-import { HashRouter, Routes, Route } from "react-router-dom"
+import { HashRouter, Navigate, Routes, Route } from "react-router-dom"
 import { Layout } from "@/components/Layout"
-import { Dashboard } from "@/pages/Dashboard"
 import { CreateOrder } from "@/pages/CreateOrder"
 import { Worklist } from "@/pages/Worklist"
 import { ReportAuthoring } from "@/pages/ReportAuthoring"
 import { PatientHistory } from "@/pages/PatientHistory"
 import { Analytics } from "@/pages/Analytics"
-import { ABDMCompliance } from "@/pages/ABDMCompliance"
 import { initialOrders, type RadiologyOrder } from "@/data/mockData"
 
 export default function App() {
@@ -40,7 +38,7 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<Dashboard orders={orders} />} />
+          <Route index element={<Navigate to="/worklist" replace />} />
           <Route
             path="new-order"
             element={<CreateOrder onCreateOrder={handleCreateOrder} />}
@@ -59,7 +57,6 @@ export default function App() {
           />
           <Route path="patient" element={<PatientHistory />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="abdm" element={<ABDMCompliance />} />
         </Route>
       </Routes>
     </HashRouter>
