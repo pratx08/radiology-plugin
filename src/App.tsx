@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { HashRouter, Routes, Route } from "react-router-dom"
 import { Layout } from "@/components/Layout"
 import { Dashboard } from "@/pages/Dashboard"
 import { CreateOrder } from "@/pages/CreateOrder"
@@ -37,7 +37,7 @@ export default function App() {
   )
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Dashboard orders={orders} />} />
@@ -62,6 +62,6 @@ export default function App() {
           <Route path="abdm" element={<ABDMCompliance />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
